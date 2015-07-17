@@ -1,0 +1,29 @@
+#include <Audio.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
+
+// GUItool: begin automatically generated code
+AudioSynthWaveformSine   sine1;          //xy=182,298
+AudioOutputAnalog        dac1;           //xy=637,299
+AudioConnection          patchCord1(sine1, dac1);
+// GUItool: end automatically generated code
+
+const int resistorPin =  12;
+const int ledPin =  13;
+
+void setup() {
+	AudioMemory(8);
+
+	pinMode(resistorPin, OUTPUT);
+	pinMode(ledPin, OUTPUT);
+
+	sine1.amplitude(0.01);
+	sine1.frequency(2200);
+}
+
+int x = 0;
+
+void loop() {
+	sine1.frequency(sin(x++ * 0.001) * 2200 + 2200);
+}
