@@ -1,9 +1,13 @@
-// led display
+#include <Audio.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
 #include <Wire.h>
 #include "Adafruit_LEDBackpack.h"
 #include "Adafruit_GFX.h"
-#include <Bounce.h>
+#include <Bounce2.h>
 #include "buttontron.h"
+#include "sound.h"
 
 #define PIN_PRINTER_TX 3 // Arduino transmit  YELLOW WIRE  labeled RX on printer
 #define PIN_PRINTER_RX 4 // Arduino receive   GREEN WIRE   labeled TX on printer
@@ -27,9 +31,14 @@ int gameTaps = 0;
 int gameTapTimes[GAME_MAX_PRESSES];
 elapsedMicros gameTime = 0;
 
-Bounce buttonBig = Bounce(PIN_BUTTON_BIG, BUTTON_DEBOUNCE_TIME_MS);
+Bounce buttonBig = Bounce();
 
 void setup() {
+	setupSound();
+
+	buttonBig.attach(PIN_BUTTON_BIG);
+	buttonBig.interval(BUTTON_DEBOUNCE_TIME_MS);
+
 	// led display init
 	matrix.begin(0x70);
 	matrix.setBrightness(15); // 15 is max
@@ -43,9 +52,11 @@ void setup() {
 		delay(300);
 	}
 
+	playBeep();
+
 	pinMode(PIN_BUTTON_BIG, INPUT_PULLUP);
 
-	Serial.print(F("Hello World"));
+	Serial.println(F("Hello World"));
 
 	//delay(2000);
 
@@ -67,41 +78,24 @@ void setup() {
 }
 
 void loop() {
-
-	//if (gameTime > GAME_TIME_US) gameTime = 0;
-
-	//int ms = gameTime / 1000000;
-	//matrix.println(ms);
-	//matrix.writeDisplay();
-
-	//int foo = digitalRead(PIN_BUTTON_BIG);
-	//Serial.print(foo);
-	//matrix.println(foo);
-	//matrix.writeDisplay();
-
 	if (buttonBig.update()) {
-		if (buttonBig.fallingEdge()) {
-			gameTaps++;
+		if (buttonBig.fell()) {
+			if (gameTaps == 0) gameTime = 0;
+
 			gameTapTimes[gameTaps] = gameTime;
+			gameTaps++;
+
+			if (gameTaps > 10) {
+				for (int i = 0; i < gameTaps; i++) {
+					Serial.println(gameTapTimes[i]);
+				}
+				gameTaps = 0;
+				playBeep();
+			}
 
 			matrix.println(gameTaps);
 			matrix.writeDisplay();
 		}
 	}
-
-	
-
-	// print a hex number
-	/*matrix.print(0xDEAD, HEX);
-	matrix.writeDisplay();
-	delay(1000);
-	
-	matrix.print(0xBEEF, HEX);
-	matrix.writeDisplay();
-	delay(1000);
-	
-	matrix.clear();
-	matrix.writeDisplay();
-	delay(500);*/
 }
 
