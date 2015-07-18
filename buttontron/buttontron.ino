@@ -5,12 +5,14 @@
 #include <Wire.h>
 #include "Adafruit_LEDBackpack.h"
 #include "Adafruit_GFX.h"
+#include "Adafruit_Thermal.h"
+#include "SoftwareSerial.h"
 #include <Bounce2.h>
 #include "buttontron.h"
 #include "sound.h"
+#include "no_sleep.h"
+#include "printer.h"
 
-#define PIN_PRINTER_TX 3 // Arduino transmit  YELLOW WIRE  labeled RX on printer
-#define PIN_PRINTER_RX 4 // Arduino receive   GREEN WIRE   labeled TX on printer
 #define PIN_BUTTON_BIG 11 // Big button
 
 #define GAME_MAX_PRESSES 		1024
@@ -18,13 +20,6 @@
 #define BUTTON_DEBOUNCE_TIME_MS	5
 
 Adafruit_7segment matrix = Adafruit_7segment();
-
-// thermal printer
-#include <Adafruit_Thermal.h>
-#include "SoftwareSerial.h"
-
-SoftwareSerial mySerial(PIN_PRINTER_RX, PIN_PRINTER_TX); // Declare SoftwareSerial obj first
-Adafruit_Thermal printer(&mySerial);     // Pass addr to printer constructor
 
 // game
 int gameTaps = 0;
@@ -35,6 +30,8 @@ Bounce buttonBig = Bounce();
 
 void setup() {
 	setupSound();
+	setupNoSleep();
+	setupPrinter();
 
 	buttonBig.attach(PIN_BUTTON_BIG);
 	buttonBig.interval(BUTTON_DEBOUNCE_TIME_MS);
@@ -46,7 +43,7 @@ void setup() {
 	matrix.writeDisplay();
 	delay(500);
 
-	for (int i = 5; i--; i >= 0){
+	for (int i = 5; i -= 1; i >= 0){
 		matrix.println(i);
 		matrix.writeDisplay();
 		delay(300);
@@ -57,24 +54,6 @@ void setup() {
 	pinMode(PIN_BUTTON_BIG, INPUT_PULLUP);
 
 	Serial.println(F("Hello World"));
-
-	//delay(2000);
-
-	/*mySerial.begin(19200);
-
-	// thermal printer init
-	printer.begin();
-	printer.justify('C');
-	printer.println(F("Philip Linde"));
-	printer.println(F("ater chips"));
-	printer.println(F("kodar data "));
-	printer.feed(5);
-
-	printer.sleep();      // Tell printer to sleep
-	delay(3000L);         // Sleep for 3 seconds
-	printer.wake();       // MUST wake() before printing again, even if reset
-	printer.setDefault(); // Restore printer to defaults
-	*/
 }
 
 void loop() {
@@ -85,17 +64,20 @@ void loop() {
 			gameTapTimes[gameTaps] = gameTime;
 			gameTaps++;
 
-			if (gameTaps > 10) {
+			if (gameTaps >= 50) {
 				for (int i = 0; i < gameTaps; i++) {
 					Serial.println(gameTapTimes[i]);
 				}
-				gameTaps = 0;
+				printResults(gameTaps);
 				playBeep();
+				gameTaps = 0;
 			}
 
 			matrix.println(gameTaps);
 			matrix.writeDisplay();
 		}
 	}
+
+	updateNoSleep();
 }
 
