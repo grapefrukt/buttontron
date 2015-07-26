@@ -1,4 +1,6 @@
-#include "AudioSampleGong.h"       // http://www.freesound.org/people/zgump/sounds/86334/
+#include "AudioSampleEnd.h"
+#include "AudioSampleReady.h"
+#include "AudioSampleTick.h"
 
 // GUItool: begin automatically generated code
 AudioPlayMemory          sound0;       //xy=319,302
@@ -24,6 +26,14 @@ void setupSound() {
 	dac.analogReference(INTERNAL);
 }
 
-void playBeep(){
-	sound0.play(AudioSampleGong);
+void playSoundTick() {
+	sound0.play(AudioSampleTick);
+}
+
+void playSoundReady(){
+	sound1.play(AudioSampleReady);
+}
+
+void playSoundEnd(){
+	sound2.play(AudioSampleEnd);
 }

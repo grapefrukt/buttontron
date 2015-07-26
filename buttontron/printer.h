@@ -1,5 +1,3 @@
-#include "Adafruit_Thermal.h"
-#include "SoftwareSerial.h"
 
 #define PIN_PRINTER_TX 3 // Arduino transmit  YELLOW WIRE  labeled RX on printer
 #define PIN_PRINTER_RX 4 // Arduino receive   GREEN WIRE   labeled TX on printer
